@@ -114,7 +114,7 @@
 
                             <h1 style="display:block;margin:0;padding:0;font-family:Helvetica;font-size:40px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:-1px;text-align:left;color:#606060!important"><span style="color:#000000"><span style="font-size:20px"><span style="line-height:1.6em">Dear&nbsp;{member_name},</span></span></span></h1>
 
-<p style="margin:1em 0;color:#606060;font-family:Helvetica;font-size:15px;line-height:150%;text-align:left">Oops, it looks like you recently missed a payment. &nbsp;You owe <strong>{amount_due}.</strong> &nbsp;This payment is <strong>{days_overdue}</strong> day(s) past the <strong>{past_due_date}</strong> due date.</p>
+<p style="margin:1em 0;color:#606060;font-family:Helvetica;font-size:15px;line-height:150%;text-align:left">Oops, it looks like you recently missed a payment. &nbsp;You owe <strong>${amount_due}.</strong> &nbsp;This payment is <strong>{days_overdue}</strong> day(s) past the <strong>{past_due_date}</strong> due date.</p>
 
                         </td>
                     </tr>

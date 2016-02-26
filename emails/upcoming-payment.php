@@ -114,7 +114,7 @@
 
                             <h1 style="display:block;margin:0;padding:0;font-family:Helvetica;font-size:40px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:-1px;text-align:left;color:#606060!important"><span style="color:#000000"><span style="font-size:20px"><span style="line-height:1.6em">Dear&nbsp;{member_name},</span></span></span></h1>
 
-<p style="margin:1em 0;color:#606060;font-family:Helvetica;font-size:15px;line-height:150%;text-align:left">According to our records, you have a payment due to&nbsp;<strong>{organization}</strong> at <strong>{university}</strong>&nbsp;in the amount of <strong>{amount_due}</strong>&nbsp;on the <strong>{due_date}</strong>. If you have already paid this&nbsp;and this message was sent in error, please ignore.<br>
+<p style="margin:1em 0;color:#606060;font-family:Helvetica;font-size:15px;line-height:150%;text-align:left">According to our records, you have a payment due to&nbsp;<strong>{organization}</strong> at <strong>{university}</strong>&nbsp;in the amount of <strong>${amount_due}</strong>&nbsp;on the <strong>{due_date}</strong>. If you have already paid this&nbsp;and this message was sent in error, please ignore.<br>
 <br>
 Paying dues is essential in order for an organization to flourish, we encourage you to pay yours as soon as possible. If you do not pay your dues, barring the consent of your treasurer, you may have fines inflicted onto your account.<br>
 <br>
