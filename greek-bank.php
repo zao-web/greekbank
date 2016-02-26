@@ -3462,7 +3462,13 @@ function gb_members_by_status( $delinquency = 'current', $org = false ) {
 }
 
 function get_member_days_over_due( $user ) {
-	return '10';
+	$past_due_date = strtotime( get_member_recent_past_due_date( $user ) );
+	$today = current_time('timestamp');
+
+	$diff = $today - $past_due_date;
+
+	$days = floor($diff / (60*60*24));
+	return $days;
 }
 
 function __old_csv_upload_description() {
