@@ -1,0 +1,4 @@
+[26-Feb-2016 15:06:24 CST6CDT] PHP Fatal error:  Uncaught Error: Call to undefined function home_url() in /home/greekban/public_html/wp-content/plugins/greek-bank/emails/missed-payment.php:69
+Stack trace:
+#0 {main}
+  thrown in /home/greekban/public_html/wp-content/plugins/greek-bank/emails/missed-payment.php on line 69
