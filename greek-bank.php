@@ -3468,7 +3468,12 @@ function get_member_days_over_due( $user ) {
 	$diff = $today - $past_due_date;
 
 	$days = floor($diff / (60*60*24));
-	return $days;
+
+	if( $days > 700 ){
+		echo 'There is a problem with your account.';
+	} else {
+		return $days;
+	}
 }
 
 function __old_csv_upload_description() {
