@@ -2554,6 +2554,8 @@ function gb_get_next_payment_amount( $member = false ) {
 
 	$paid         = get_member_amount_paid( $member, false );
 	$initial_dues = gb_get_member_dues( $member );
+	$dates = gb_get_member_payment_plans( $member );
+	$last_due_date = end( $dates );
 
 	if ( $initial_dues <= $paid ) {
 		return false;
@@ -2563,6 +2565,10 @@ function gb_get_next_payment_amount( $member = false ) {
 
 	if ( ! count( $plans ) ) {
 		return false;
+	}
+
+	if( current_time( 'timestamp' ) > strtotime( $last_due_date) ) {
+		return 0.00;
 	}
 
 	$dues  = $initial_dues / count( $plans );
