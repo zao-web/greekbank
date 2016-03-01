@@ -1518,7 +1518,7 @@ function get_member_recent_past_due_date( $user = false ) {
 	}
 	
 	$due_date = array_pop($dates);
-	return $due_date ? date( 'M jS', strtotime( $due_date['date'] ) ) : false;
+	return $due_date ? date( 'M j, Y', strtotime( $due_date['date'] ) ) : false;
 }
 
 /**
