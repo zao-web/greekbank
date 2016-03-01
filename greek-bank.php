@@ -2347,7 +2347,7 @@ function get_member_overdue_balance( $member = false, $format = true, $fees = tr
 	}
 
 
-	$date  = date( 'Y-m-d', strtotime( get_member_due_date() ) );
+	$date  = date( 'Y-m-d', strtotime( get_member_due_date( $member ) ) );
 	$dates = gb_get_member_payment_plans( $member );
 
 	if ( is_null( $dates ) ) {
