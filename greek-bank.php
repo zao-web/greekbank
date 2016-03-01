@@ -2349,12 +2349,21 @@ function get_member_overdue_balance( $member = false, $format = true, $fees = tr
 
 	$date  = date( 'Y-m-d', strtotime( get_member_due_date( $member ) ) );
 	$dates = gb_get_member_payment_plans( $member );
+	$last_due_date = end( $dates );
+
+	if( current_time( 'timestamp' ) > strtotime( $last_due_date) ){
+	    $date = $last_due_date;
+	}
 
 	if ( is_null( $dates ) ) {
 		return 0.00;
 	}
 
 	$due = array_search( $date, $dates );
+
+	if( current_time( 'timestamp' ) > strtotime( $last_due_date) ){
+		$due = $due + 1;
+	}
 
 	$plans = gb_get_member_payment_plans( $member );
 
