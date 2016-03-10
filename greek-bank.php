@@ -804,7 +804,7 @@ function gb_get_terms_for_user( $user, $taxonomy = 'member_category', $args = ar
 		'meta_query' => array(
 			array(
 				'key'   => 'organization_id',
-				'value' => gb_get_organization_id( get_current_user_id() )
+				'value' => gb_get_organization_id( $user->ID )
 			)
 		)
 	);
@@ -1031,8 +1031,8 @@ function gb_get_member_dues( $member = false ) {
 		$member = wp_get_current_user();
 	}
 
-	$categories = gb_get_terms_for_user( $member );
-
+	$categories = gb_get_terms_for_user( $member->ID );
+	
 	if ( empty( $categories ) ) {
 		return false;
 	}
@@ -1372,8 +1372,6 @@ function gb_send_email( $template, $user, $subject, $extra = '' ) {
 
 	$text = gb_merge_email_tags( $text, $user );
 
-	$text .= var_export( $user, 1 );
-
 	// $email = // 'missed-payment' == $template ? 'justinsainton@gmail.com' : $user->user_email;
 
 	return wp_mail( 'justinsainton@gmail.com', $subject, $text );
@@ -1423,6 +1421,7 @@ function gb_merge_email_tags( $text, $user ) {
 		'{fee_due_date}'    	 => date( 'F j, Y', $last_fee->due_date ),
 	);
 
+	
 	return str_replace( array_keys( $args ), $args, $text );
 }
 
@@ -2635,7 +2634,6 @@ function get_member_current_balance( $member = false, $format = true ) {
 		$amount -= get_member_amount_paid( $member, false );
 
 		$amount = $amount < 0 ? 0.00 : $amount;
-
 	}
 
 	if ( $format ) {
