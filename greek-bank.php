@@ -3115,7 +3115,7 @@ function gb_apply_late_fees() {
 
 		trigger_error( __FUNCTION__ . ' : ' . var_export($balance, 1 ) );
 
-		if ( $balance > 0 ) {
+		if ( ! $balance ) {
 			continue;
 		}
 
