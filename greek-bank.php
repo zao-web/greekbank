@@ -1372,9 +1372,7 @@ function gb_send_email( $template, $user, $subject, $extra = '' ) {
 
 	$text = gb_merge_email_tags( $text, $user );
 
-	// $email = // 'missed-payment' == $template ? 'justinsainton@gmail.com' : $user->user_email;
-
-	return wp_mail( 'justinsainton@gmail.com', $subject, $text );
+	return wp_mail( $user->user_email, $subject, $text );
 }
 
 /**
