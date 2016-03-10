@@ -1388,9 +1388,10 @@ function gb_send_email( $template, $user, $subject, $extra = '' ) {
  */
 function gb_merge_email_tags( $text, $user ) {
 
-	$amount_due = get_member_current_balance( $user );
-	$org        = gb_get_member_organization( $user->ID );
-	$last_fees  = gb_get_member_payments( $user,
+	$amount_due 	= get_member_current_balance( $user );
+	$missed_payment = get_member_overdue_balance( $user );
+	$org      	    = gb_get_member_organization( $user->ID );
+	$last_fees 	 	= gb_get_member_payments( $user,
 					 array(
 						'payment_type'   => 'fees',
 						'post_status'    => 'unpaid',
@@ -1401,24 +1402,25 @@ function gb_merge_email_tags( $text, $user ) {
 	$last_fee = array_pop( $last_fees );
 
 	$args = array(
-		'{amount_due}'      => $amount_due,
-		'{due_date}'        => get_member_due_date( $user ),
-		'{past_due_date}'	=> get_member_recent_past_due_date( $user ),
-		'{days_overdue}'    => get_member_days_over_due( $user ),
-		'{current_year}'    => date( 'Y' ),
-		'{organization}'    => $org->post_title,
-		'{member_name}'     => $user->display_name,
-		'{treasurer_name}'  => gb_get_treasurer( $user )->display_name,
-		'{treasurer_email}' => gb_get_treasurer( $user )->user_email,
-		'{payment_url}'     => gb_get_payment_url( $amount_due, $user ),
-		'{total_dues}'      => gb_current_month_amount_paid( 'all', $org ),
-		'{total_past_dues}' => gb_current_month_amount_past_due( 'all', $org ),
-		'{university}'      => gb_user_university( $user->ID ),
-		'{members_paid}'    => gb_members_by_status( 'current', $org ),
-		'{members_late}'    => gb_members_by_status( 'late', $org ),
-		'{fee_description}' => $last_fee->post_title,
-		'{fee_amount}'      => '$' . number_format( $last_fee->total_amount, 2, '.', '' ),
-		'{fee_due_date}'    => date( 'F j, Y', $last_fee->due_date ),
+		'{amount_due}' 			 => $amount_due,
+		'{missed_payment}'		 => $missed_payment,
+		'{due_date}'       		 => get_member_due_date( $user ),
+		'{past_due_date}'		 => get_member_recent_past_due_date( $user ),
+		'{days_overdue}'   		 => get_member_days_over_due( $user ),
+		'{current_year}'  		 => date( 'Y' ),
+		'{organization}'    	 => $org->post_title,
+		'{member_name}'     	 => $user->display_name,
+		'{treasurer_name}'  	 => gb_get_treasurer( $user )->display_name,
+		'{treasurer_email}'  	 => gb_get_treasurer( $user )->user_email,
+		'{payment_url}'     	 => gb_get_payment_url( $amount_due, $user ),
+		'{total_dues}'      	 => gb_current_month_amount_paid( 'all', $org ),
+		'{total_past_dues}' 	 => gb_current_month_amount_past_due( 'all', $org ),
+		'{university}'      	 => gb_user_university( $user->ID ),
+		'{members_paid}'    	 => gb_members_by_status( 'current', $org ),
+		'{members_late}'    	 => gb_members_by_status( 'late', $org ),
+		'{fee_description}' 	 => $last_fee->post_title,
+		'{fee_amount}'      	 => '$' . number_format( $last_fee->total_amount, 2, '.', '' ),
+		'{fee_due_date}'    	 => date( 'F j, Y', $last_fee->due_date ),
 	);
 
 	return str_replace( array_keys( $args ), $args, $text );
@@ -3121,6 +3123,11 @@ function gb_apply_late_fees() {
 		trigger_error( __FUNCTION__ . ' : ' . var_export($days_late, 1 ) );
 		$due_date  = get_member_recent_past_due_date( $member );
 		trigger_error( __FUNCTION__ . ' : ' . var_export($due_date, 1 ) );
+
+		//If a due date has not come and gone, exit
+		if( $due_date == false ) {
+			exit;
+		}
 
 		// If we're not currently outside of the "Days Late" threshold, continue
 		if ( current_time( 'timestamp' ) < strtotime( '+ ' . $days_late . ' days', strtotime( $due_date ) ) ) {
