@@ -3124,9 +3124,9 @@ function gb_apply_late_fees() {
 		$due_date  = get_member_recent_past_due_date( $member );
 		trigger_error( __FUNCTION__ . ' : ' . var_export($due_date, 1 ) );
 
-		//If a due date has not come and gone, exit
+		//If a due date has not come and gone, go to next member
 		if( $due_date == false ) {
-			exit;
+			continue;
 		}
 
 		// If we're not currently outside of the "Days Late" threshold, continue
