@@ -1031,7 +1031,7 @@ function gb_get_member_dues( $member = false ) {
 		$member = wp_get_current_user();
 	}
 
-	$categories = gb_get_terms_for_user( $member->ID );
+	$categories = gb_get_terms_for_user( $member );
 	
 	if ( empty( $categories ) ) {
 		return false;
@@ -1149,7 +1149,7 @@ function gb_get_organization_id( $id ) {
 		return $org_ids[ $id ];
 	}
 
-	$connected_type = current_user_can( 'manage_organization' ) ? 'single_treasurer' : 'many_members';
+	$connected_type = user_can( $id, 'manage_organization' ) ? 'single_treasurer' : 'many_members';
 
 	$organization = new WP_Query( array(
 		'connected_type'  => $connected_type,
