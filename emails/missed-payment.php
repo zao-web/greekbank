@@ -1,23 +1,23 @@
 <div id=":28n" class="ii gt m14f684b2121d1f0e adP adO"><div id=":28o" class="a3s" style="overflow: hidden;"><u></u>
 
 
-    	
-        
-        
 
-		
 
-	
+
+
+
+
+
 	<div style="margin:0;padding:0;background-color:#f2f2f2;min-height:100%!important;width:100%!important">
 		<center>
 			<table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" style="border-collapse:collapse;margin:0;padding:0;background-color:#f2f2f2;height:100%!important;width:100%!important">
 				<tbody><tr>
 					<td align="center" valign="top" style="margin:0;padding:0;padding-top:20px;padding-right:10px;padding-bottom:20px;padding-left:10px;border-top:0;height:100%!important;width:100%!important">
-						
+
 						<table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;max-width:600px;border:0">
                             <tbody><tr>
                                 <td align="center" valign="top" style="background-color:#ffffff;border-top:0;border-bottom:0">
-                                    
+
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse">
                                         <tbody><tr>
                                         	<td valign="top"><table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse">
@@ -41,12 +41,12 @@
 </table></td>
                                         </tr>
                                     </tbody></table>
-                                    
+
                                 </td>
                             </tr>
                             <tr>
                                 <td align="center" valign="top" style="background-color:#ffffff;border-top:0;border-bottom:0">
-                                    
+
                                     <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse">
                                         <tbody><tr>
                                             <td align="center" valign="top"><table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse">
@@ -94,12 +94,12 @@
 </table></td>
                                         </tr>
                                     </tbody></table>
-                                    
+
                                 </td>
                             </tr>
                             <tr>
                                 <td align="center" valign="top" style="background-color:#eeeeee;border-top:0;border-bottom:0">
-                                    
+
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse">
                                         <tbody><tr>
                                             <td valign="top"><table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse">
@@ -126,39 +126,39 @@
 </table></td>
                                         </tr>
                                     </tbody></table>
-                                    
+
                                 </td>
                             </tr>
                             <tr>
                                 <td align="center" valign="top" style="background-color:#eeeeee;border-top:0;border-bottom:0">
-                                	
+
                                     <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse">
                                         <tbody><tr>
                                             <td align="center" valign="top">
-                                                
-                                                
+
+
                                                 <table align="left" border="0" cellpadding="0" cellspacing="0" width="50%" style="border-collapse:collapse;max-width:298px">
                                                     <tbody><tr>
                                                         <td valign="top"></td>
                                                     </tr>
                                                 </tbody></table>
-                                                
+
                                                 <table align="left" border="0" cellpadding="0" cellspacing="0" width="50%" style="border-collapse:collapse;max-width:298px">
                                                     <tbody><tr>
                                                         <td valign="top"></td>
                                                     </tr>
                                                 </tbody></table>
-                                                
-                                                
+
+
                                             </td>
                                         </tr>
                                     </tbody></table>
-                                    
+
                                 </td>
                             </tr>
                             <tr>
                                 <td align="center" valign="top" style="background-color:#ffffff;border-top:0;border-bottom:0">
-                                    
+
                                     <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse">
                                         <tbody><tr>
                                             <td align="center" valign="top"><table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse">
@@ -183,7 +183,7 @@
                     <tbody>
                         <tr>
                             <td align="center" valign="middle" style="font-family:Arial;font-size:16px;padding:16px">
-                                <a href="{payment_url} title="Make A Payment" style="font-weight:bold;letter-spacing:2px;line-height:100%;text-align:center;text-decoration:none;color:#ffffff;word-wrap:break-word;display:block">MAKE A PAYMENT</a>
+                                <a href="{payment_url}" title="Make A Payment" style="font-weight:bold;letter-spacing:2px;line-height:100%;text-align:center;text-decoration:none;color:#ffffff;word-wrap:break-word;display:block">MAKE A PAYMENT</a>
                             </td>
                         </tr>
                     </tbody>
@@ -213,12 +213,12 @@
 </table></td>
                                         </tr>
                                     </tbody></table>
-                                    
+
                                 </td>
                             </tr>
                             <tr>
                                 <td align="center" valign="top" style="background-color:#ffffff;border-top:0;border-bottom:0">
-                                    
+
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse">
                                         <tbody><tr>
                                             <td valign="top"><table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse">
@@ -243,11 +243,11 @@
 </table></td>
                                         </tr>
                                     </tbody></table>
-                                    
+
                                 </td>
                             </tr>
 						</tbody></table>
-						
+
 					</td>
 				</tr>
 			</tbody></table>
