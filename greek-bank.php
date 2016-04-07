@@ -294,6 +294,11 @@ function gb_is_user_treasurer() {
 add_action( 'wp_enqueue_scripts', 'gb_enqueue_scripts' );
 
 function gb_treasurer_wrapper() {
+	if ( ! is_user_logged_in() ) {
+	?><script>window.location = <?php echo wp_json_encode( home_url() ); ?></script><?php
+	die;
+	}
+
 	if ( ! current_user_can( 'manage_organization' ) && ! current_user_can( 'manage_options' ) ) {
 	?><script>window.location = <?php echo wp_json_encode( home_url( 'member-profile' ) ); ?></script><?php
 	die;
@@ -307,6 +312,10 @@ function gb_treasurer_wrapper() {
 add_shortcode( 'member_cp', 'gb_treasurer_wrapper' );
 
 function gb_member_profile() {
+	if ( ! is_user_logged_in() ) {
+	?><script>window.location = <?php echo wp_json_encode( home_url() ); ?></script><?php
+	die;
+	}
 	ob_start();
 	get_template_part( 'member-profile' );
 	return ob_get_clean();
