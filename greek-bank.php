@@ -23,7 +23,7 @@ Treasurers have the additional capability of "manage_organization"
 
 */
 
-define( 'GB_PLUGIN_VERSION', '040716' );
+define( 'GB_PLUGIN_VERSION', '3:46040716' );
 
 /**
  * Registers posts types (Organizations, Terms, Payments)

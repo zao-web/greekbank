@@ -376,7 +376,7 @@
 
 		SELF.populateOtherAmount = function( amount ) {
 			$( '.payment-plan-option.custom-amount' ).click();
-			$( '#input_7_2' ).val( amount );
+			$( '#input_7_2' ).val( amount ).show();
 		};
 
 		SELF.openLoginModal = function( e ) {
