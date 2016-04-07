@@ -235,7 +235,7 @@ function gb_enqueue_scripts() {
 		'logout_url' => wp_logout_url( home_url() )
 	);
 
-	if ( $check = gb_check_request_payment_hash( 'greek-bank-super-secret-confirmation' ) ) {
+	if ( is_user_logged_in() && ( $check = gb_check_payment_amount_hash( 'greek-bank-super-secret-confirmation' ) ) ) {
 		$js_vars['autofill_amount'] = $check['amount'];
 	}
 
@@ -1450,33 +1450,79 @@ function gb_get_payment_url( $amount, $user ) {
 		$url = home_url( 'member-profile' );
 	}
 
-	$url = add_query_arg( array( 'amount' => str_replace( ',', '', $amount ), 'payment_hash' => gb_generate_payment_hash( $user, $amount ) ), $url ) . '#profile-panel-payment';
+	$url = add_query_arg( array(
+		'amount'         => str_replace( ',', '', $amount ),
+		'payment_hash'   => gb_generate_payment_hash( $user, $amount ),
+		'email'          => $user->user_email,
+		'secondary_hash' => gb_generate_hash( $user->user_email ),
+	), $url ) . '#profile-panel-payment';
 
 	return $url;
 }
 
-function gb_generate_payment_hash( $user, $amount ) {
+function gb_generate_hash( $value, $hash_key = 'greek-bank-super-secret' ) {
+	return hash_hmac( 'sha256', $value, $hash_key );
+}
 
-	$hash = get_user_meta( $user->ID, '_make_a_payment_hash', true );
+function gb_generate_payment_hash( $user, $amount ) {
+	$user = isset( $user->ID ) ? $user : get_user_by( 'id', $user );
+
+	/*
+	 * Need the hash user meta key to be unique per user,
+	 * otherwise it's a security hole when two users have
+	 * the same missed-payment amount.
+	 */
+	$email_hash = gb_generate_hash( $user->user_email );
+	$hash = get_user_meta( $user->ID, "_payment_{$email_hash}", true );
 
 	if ( empty( $hash ) ) {
-		$hash = hash_hmac( 'sha256', $amount, 'greek-bank-super-secret' );
-		update_user_meta( $user->ID, '_make_a_payment_hash', $hash );
+		$hash = gb_generate_hash( $amount );
+		update_user_meta( $user->ID, "_payment_{$email_hash}", $hash );
 	}
 
 	return $hash;
 }
 
-function gb_check_request_payment_hash( $hash_secret = 'greek-bank-super-secret' ) {
+/**
+ * Checks if the payment amount hash has passed security checks as well as
+ * the user email hash, to ensure accurate logins for users.
+ */
+function gb_check_request_payment_authentication_hash( $hash_secret = 'greek-bank-super-secret' ) {
+	if ( $check = gb_check_payment_amount_hash( $hash_secret ) ) {
+		$reqeust = $_REQUEST;
 
-	if ( ! isset( $_REQUEST['amount'] ) || ! isset( $_REQUEST['payment_hash'] ) ) {
+		if ( ! isset( $_REQUEST['email'], $_REQUEST['secondary_hash'] ) ) {
+			return false;
+		}
+
+		$check['email']      = sanitize_text_field( $_REQUEST['email'] );
+		$check['email_hash'] = sanitize_text_field( $_REQUEST['secondary_hash'] );
+		$hash_check          = gb_generate_hash( $check['email'], $hash_secret );
+		$match               = $hash_check === $check['email_hash'];
+
+		if ( ! $match ) {
+			return false;
+		}
+
+		return $check;
+	}
+
+	return false;
+}
+
+/**
+ * Checks if the payment amount hash has passed security checks
+ */
+function gb_check_payment_amount_hash( $hash_secret = 'greek-bank-super-secret' ) {
+
+	if ( ! isset( $_REQUEST['amount'], $_REQUEST['payment_hash'] ) ) {
 		return false;
 	}
 
 	$amount = sanitize_text_field( $_REQUEST['amount'] );
 	$hash   = sanitize_text_field( $_REQUEST['payment_hash'] );
 
-	$check = hash_hmac( 'sha256', $amount, $hash_secret );
+	$check = gb_generate_hash( $amount, $hash_secret );
 	$match = $check === $hash;
 
 	if ( ! $match ) {
@@ -1486,9 +1532,13 @@ function gb_check_request_payment_hash( $hash_secret = 'greek-bank-super-secret'
 	return compact( 'amount', 'hash' );
 }
 
+/**
+ * Hooked to init, checks if user clicked a 'missed-payment' link in their email.
+ * If they did, they get automatically logged in (assuming all the correct params are there).
+ */
 function gb_check_payment_hash_to_authenticate() {
 
-	$check = gb_check_request_payment_hash();
+	$check = gb_check_request_payment_authentication_hash();
 
 	if ( ! $check ) {
 		// nope, nothing to see here.
@@ -1496,13 +1546,17 @@ function gb_check_payment_hash_to_authenticate() {
 	}
 
 	global $wpdb;
-	$user_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->usermeta . ' WHERE meta_key = "_make_a_payment_hash" AND meta_value = %s', $check['hash'] ) );
+
+	$meta_key = "_payment_{$check['email_hash']}";
+
+	$user_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->usermeta . ' WHERE meta_key = %s AND meta_value = %s', $meta_key, $check['hash'] ) );
 
 	if ( ! $user_id ) {
 		return;
 	}
 
-	delete_user_meta( $user_id, '_make_a_payment_hash' );
+	// Delete for security reasons. Only want to allow them to login via the email link one time.
+	delete_user_meta( $user_id, $meta_key );
 
 	wp_clear_auth_cookie();
 	wp_set_auth_cookie( $user_id, false, '' );
@@ -1512,8 +1566,15 @@ function gb_check_payment_hash_to_authenticate() {
 	 * Update payment_hash with a confirmation hash.. This is so we can redirect w/ authenticated
 	 * session, but still validate the amount when localizing the script data (gb_enqueue_scripts)
 	 * (and will keep from redirect-looping by using same amount/payment_hash query vars)
+	 *
+	 * We're also stripping the email query vars as they do not need to be in the final URL, and it's
+	 * a tiny bit of security by obscurity.
 	 */
-	$new_url = add_query_arg( 'payment_hash', hash_hmac( 'sha256', $check['amount'], 'greek-bank-super-secret-confirmation' ) );
+	$new_url = add_query_arg(
+		'payment_hash',
+		gb_generate_hash( $check['amount'], 'greek-bank-super-secret-confirmation' ),
+		remove_query_arg( array( 'email', 'secondary_hash' ) )
+	);
 
 	// Force new, authenticated session
 	wp_redirect( esc_url_raw( $new_url ) );
