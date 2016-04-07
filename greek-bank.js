@@ -16,6 +16,10 @@
 				SELF.changeTabState( '#profile' );
 				$( 'label#profile-tab' ).click();
 				SELF.openPaymentModal();
+
+				if ( greekBankGlobal.autofill_amount ) {
+					SELF.populateOtherAmount( greekBankGlobal.autofill_amount );
+				}
 			} else if ( hash !== ""  ) {
 				var s = hash.replace( '-panel', '' );
 				SELF.changeTabState( s );
@@ -368,6 +372,11 @@
 			history.pushState( { 'url' : url + '#profile-panel-payment' }, '',  url + '#profile-panel-payment' );
 			$( 'div.overlay' ).css( 'display', 'block' );
 			$( 'div.new-payment-modal' ).css( 'display', 'block' );
+		};
+
+		SELF.populateOtherAmount = function( amount ) {
+			$( '.payment-plan-option.custom-amount' ).click();
+			$( '#input_7_2' ).val( amount );
 		};
 
 		SELF.openLoginModal = function( e ) {

@@ -22,6 +22,9 @@ Both roles have read and "manage_membership" capabilities.
 Treasurers have the additional capability of "manage_organization"
 
 */
+
+define( 'GB_PLUGIN_VERSION', '040716' );
+
 /**
  * Registers posts types (Organizations, Terms, Payments)
  * @return [type] [description]
@@ -226,13 +229,21 @@ function gb_modify_payment_total( $submission_data, $feed, $form, $entry ) {
 add_filter( 'gform_submission_data_pre_process_payment_7', 'gb_modify_payment_total', 10, 4 );
 
 function gb_enqueue_scripts() {
-	wp_enqueue_script( 'greek-bank', plugins_url( 'greek-bank.js', __FILE__ ), array( 'jquery' ), microtime() );
-	wp_localize_script( 'greek-bank', 'greekBankGlobal', array(
+	wp_enqueue_script( 'greek-bank', plugins_url( 'greek-bank.js', __FILE__ ), array( 'jquery' ), GB_PLUGIN_VERSION );
+
+	$js_vars = array(
 		'logout_url' => wp_logout_url( home_url() )
-	) );
+	);
+
+	if ( $check = gb_check_request_payment_hash( 'greek-bank-super-secret-confirmation' ) ) {
+		$js_vars['autofill_amount'] = $check['amount'];
+	}
+
+	wp_localize_script( 'greek-bank', 'greekBankGlobal', $js_vars );
+
 	if ( is_page( 'treasurer-center' ) ) {
-		wp_enqueue_script( 'greek-bank-tablesorter', plugins_url( 'tablesorter.js', __FILE__ ), array( 'jquery' ) );
-		wp_enqueue_script( 'greek-bank-chart'      , 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js', array( 'jquery' ) );
+		wp_enqueue_script( 'greek-bank-tablesorter', plugins_url( 'tablesorter.js', __FILE__ ), array( 'jquery' ), '1.0.0' );
+		wp_enqueue_script( 'greek-bank-chart', 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js', array( 'jquery' ), '1.0.2' );
 		wp_localize_script( 'greek-bank-chart', 'greekChartVars', array(
 			'amount_paid'      => gb_current_month_amount_paid(),
 			'amount_due'       => gb_current_term_amount_due(),
@@ -1448,24 +1459,36 @@ function gb_generate_payment_hash( $user, $amount ) {
 	return $hash;
 }
 
-function gb_check_payment_hash() {
+function gb_check_request_payment_hash( $hash_secret = 'greek-bank-super-secret' ) {
 
 	if ( ! isset( $_REQUEST['amount'] ) || ! isset( $_REQUEST['payment_hash'] ) ) {
-		return;
+		return false;
 	}
 
-	$amount = $_REQUEST['amount'];
-	$hash   = $_REQUEST['payment_hash'];
+	$amount = sanitize_text_field( $_REQUEST['amount'] );
+	$hash   = sanitize_text_field( $_REQUEST['payment_hash'] );
 
-	$check = hash_hmac( 'sha256', $amount, 'greek-bank-super-secret' );
+	$check = hash_hmac( 'sha256', $amount, $hash_secret );
+	$match = $check === $hash;
 
-	if ( $check !== $hash ) {
+	if ( ! $match ) {
+		return false;
+	}
+
+	return compact( 'amount', 'hash' );
+}
+
+function gb_check_payment_hash_to_authenticate() {
+
+	$check = gb_check_request_payment_hash();
+
+	if ( ! $check ) {
+		// nope, nothing to see here.
 		return;
 	}
 
 	global $wpdb;
-
-	$user_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->usermeta . ' WHERE meta_key = "_make_a_payment_hash" AND meta_value = %s', $hash ) );
+	$user_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->usermeta . ' WHERE meta_key = "_make_a_payment_hash" AND meta_value = %s', $check['hash'] ) );
 
 	if ( ! $user_id ) {
 		return;
@@ -1476,9 +1499,20 @@ function gb_check_payment_hash() {
 	wp_clear_auth_cookie();
 	wp_set_auth_cookie( $user_id, false, '' );
 	wp_set_current_user( $user_id );
+
+	/*
+	 * Update payment_hash with a confirmation hash.. This is so we can redirect w/ authenticated
+	 * session, but still validate the amount when localizing the script data (gb_enqueue_scripts)
+	 * (and will keep from redirect-looping by using same amount/payment_hash query vars)
+	 */
+	$new_url = add_query_arg( 'payment_hash', hash_hmac( 'sha256', $check['amount'], 'greek-bank-super-secret-confirmation' ) );
+
+	// Force new, authenticated session
+	wp_redirect( esc_url_raw( $new_url ) );
+	exit;
 }
 
-add_action( 'init', 'gb_check_payment_hash' );
+add_action( 'init', 'gb_check_payment_hash_to_authenticate' );
 
 /**
  * Gets next due date.
