@@ -26,7 +26,7 @@
 		SELF.changeTabState = function( e ) {
 			var $this = e.target ? $( this ) : $( e );
 
-			$this.parent().find('.state').each(function () {
+			$this.parent().find('.state').each(function() {
 		        if ( this.checked ) {
 		        	var new_url = url + '#' + $this.attr( 'aria-controls' );
 		            $this.attr( 'aria-selected', 'true' );
@@ -54,7 +54,7 @@
 
 		SELF.formatCurrency = function( value ) {
 			return  '$' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-		}
+		};
 
 		SELF.generateCharts = function() {
 			if ( ! $( 'body' ).hasClass( 'treasurer-center' ) ) {
@@ -142,7 +142,7 @@
 					tooltipTemplate: "<%if (label){%><%=label%>: <%}%><%= value %>",
 				}
 			} );*/
-		}
+		};
 
 		SELF.generateChart = function( options ) {
 			var name = options.name;
@@ -166,7 +166,7 @@
 
 		SELF.showCharts = function() {
 			return charts;
-		}
+		};
 
 		SELF.showProfile = function( e ) {
 			$( 'div.panel:visible' ).css( 'display', 'none' );
@@ -207,12 +207,12 @@
 					'json'
 			);
 
-		}
+		};
 
 		SELF.titleCase = function( string ) {
 			return string.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 
-		}
+		};
 
 		SELF.openDetailsModal = function( e ) {
 			if ( e ) {
@@ -332,9 +332,9 @@
 			SELF.updateSurchargeAmount( $amount_input.val() );
 		};
 
-		SELF.roundUp = function ( num ) {
+		SELF.roundUp = function( num ) {
 			return +(Math.round(num + "e+2")  + "e-2");
-		}
+		};
 
 		SELF.updateSurchargeAmount = function( amount ) {
 			var $base_amount      = $( '.base-amount' ),
@@ -349,11 +349,11 @@
 			$surcharge_amount.text( SELF.formatCurrency( surcharge ) );
 
 			$total.text( SELF.formatCurrency( +( ( Number( amount ) + surcharge ).toFixed( 2 ) ) ) );
-		}
+		};
 
 		SELF.updateSurchargeWithCustomAmount = function() {
 			SELF.updateSurchargeAmount( $( this ).val() );
-		}
+		};
 
 		SELF.openPaymentModal = function( e ) {
 
@@ -417,7 +417,7 @@
 				id.preventDefault();
 			}
 
-			var id = id.target ? $( this ).parents( 'tr' ).data( 'member-id' ) : id,
+			id = id.target ? $( this ).parents( 'tr' ).data( 'member-id' ) : id,
 
 			data = {
 				nonce  : $( this ).data( 'delete-nonce' ),
@@ -495,7 +495,7 @@
 		};
 
 		SELF.bulkActionsHandler = function( e ) {
-			if ( $( '.bulk-actions select' ).val() == '' ) {
+			if ( $( '.bulk-actions select' ).val() === '' ) {
 				alert( 'You must select an action to complete.' );
 				return;
 			}
@@ -510,23 +510,23 @@
 			if ( 'delete' == action ) {
 				SELF.deleteMember( member_ids, true );
 			} else if ( 'edit' == action ) {
-				SELF.bulkEditCategories( member_ids )
+				SELF.bulkEditCategories( member_ids );
 			} else if ( 'add-transaction' == action ) {
 				SELF.bulkAddTransactions( member_ids );
 			}
-		}
+		};
 
 		SELF.newTerm = function( e ) {
 			return confirm( 'Are you sure you want to create a new term? This will close out your current term and generate a new set of dues for all of your members.' );
-		}
+		};
 
 		SELF.logoutLink = function( e ) {
 			e.preventDefault();
 
 			window.location = greekBankGlobal.logout_url;
-		}
+		};
 
-		SELF.setDefaultPaymentDates = function () {
+		SELF.setDefaultPaymentDates = function() {
 			var $this = $( this ),
 			    map = {
 			            '1 payment'  : [ '#input_6_18' ],
@@ -574,7 +574,7 @@
         		$( map[ val ][ 3 ] ).val( last_date.val() );
             }
 
-		}
+		};
 
 		$(document).ready(function( $ ) {
 
@@ -609,7 +609,7 @@
 			$( window ).on( 'popstate', SELF.event_popstate );
 
 		});
-	}
+	};
 
 	window.greekBankJS = new greekBankJS();
 
