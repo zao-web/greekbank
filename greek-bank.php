@@ -19,7 +19,7 @@ This plugin depends on the following plugins:
 
 It also depends on the user roles of "member" and "treasurer".
 Both roles have read and "manage_membership" capabilities.
-Treasurers have the additional capability of "manage_orgetganization"
+Treasurers have the additional capability of "manage_organization"
 
 */
 /**
@@ -1032,7 +1032,7 @@ function gb_get_member_dues( $member = false ) {
 	}
 
 	$categories = gb_get_terms_for_user( $member );
-	
+
 	if ( empty( $categories ) ) {
 		return false;
 	}
@@ -1419,7 +1419,7 @@ function gb_merge_email_tags( $text, $user ) {
 		'{fee_due_date}'    	 => date( 'F j, Y', $last_fee->due_date ),
 	);
 
-	
+
 	return str_replace( array_keys( $args ), $args, $text );
 }
 
@@ -1515,7 +1515,7 @@ function get_member_recent_past_due_date( $user = false ) {
 			unset( $dates[ $index ] );
 		}
 	}
-	
+
 	$due_date = array_pop($dates);
 	return $due_date ? date( 'M j, Y', strtotime( $due_date['date'] ) ) : false;
 }
