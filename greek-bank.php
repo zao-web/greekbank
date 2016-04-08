@@ -1468,7 +1468,7 @@ function gb_generate_payment_hash( $user, $amount ) {
 	$user = isset( $user->ID ) ? $user : get_user_by( 'id', $user );
 
 	/*
-	 * Need the hash user meta key to be unique per user,
+	 * Need to hash the user meta key to be unique per user,
 	 * otherwise it's a security hole when two users have
 	 * the same missed-payment amount.
 	 */
@@ -1489,7 +1489,6 @@ function gb_generate_payment_hash( $user, $amount ) {
  */
 function gb_check_request_payment_authentication_hash( $hash_secret = 'greek-bank-super-secret' ) {
 	if ( $check = gb_check_payment_amount_hash( $hash_secret ) ) {
-		$reqeust = $_REQUEST;
 
 		if ( ! isset( $_REQUEST['email'], $_REQUEST['secondary_hash'] ) ) {
 			return false;
