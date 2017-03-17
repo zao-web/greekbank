@@ -221,7 +221,22 @@ add_action( 'init', 'gb_register_default_user_taxonomies', 8 );
 function gb_modify_payment_total( $submission_data, $feed, $form, $entry ) {
 	$surcharge = apply_filters( 'gb_surcharge_percentage', 1.0149 );
 
-	$submission_data['payment_amount'] = round( rgar( $entry, '2' ) * $surcharge , 2 ) ;
+	//$fmt = new NumberFormatter( 'en_US', NumberFormatter::DECIMAL );
+
+	$jesse_formatter_locale = setlocale(LC_MONETARY, 'en_US.UTF-8');
+	$jesse_formatter1 = money_format('%.2n', $entry);
+	$jesse_formatter2 = money_format('%.2n', $pre_total);
+
+	// $subtotal = $jesse_formatter1;
+	// $pre_total = ($subtotal * $surcharge);
+	// $total = $jesse_formatter2;
+
+	//$subtotal = $jesse_formatter1;
+	$pre_total = ($entry * $surcharge);
+	$total = $jesse_formatter2;
+
+	// $submission_data['payment_amount'] = round( $fmt->parse( rgar( $entry, '2' ) ) * $surcharge , 2 ) ;
+	$submission_data['payment_amount'] = $total;
 
 	return $submission_data;
 }
@@ -532,9 +547,9 @@ function gb_user_phone_number() {
 }
 
 function gb_user_university( $user_id = 0 ) {
-	
+
 	$org = gb_get_member_organization( $user_id );
-	
+
 	if ( ! $org ) {
 		return '';
 	}
@@ -1231,7 +1246,7 @@ function gb_create_treasurer_settings_meta( $entry, $form ) {
 	$organization_id = gb_get_organization_id( $treasurer_id );
 
 	if ( gb_completed_treasurer_settings() ) {
-		
+
 		$semester_id = gb_get_current_semester()->ID;
 	} else {
 		// Create Semester, if there isn't one active
@@ -1244,7 +1259,7 @@ function gb_create_treasurer_settings_meta( $entry, $form ) {
 
 	// Semester meta
 	update_post_meta( $semester_id, 'entry_id', $entry['id'] );
-	
+
 	foreach ( $entry as $form_field_id => $value ) {
 		if ( is_numeric( $form_field_id ) ) {
 			update_post_meta( $semester_id, $form_field_id, $value );
@@ -1398,6 +1413,10 @@ function gb_send_email( $template, $user, $subject, $extra = '' ) {
 	$text = ob_get_clean();
 
 	$text = gb_merge_email_tags( $text, $user );
+
+	if ( 'justinsainton@gmail.com' === $user->user_email ) {
+		return;
+	}
 
 	return wp_mail( $user->user_email, $subject, $text );
 }
@@ -3306,14 +3325,23 @@ function gb_current_month_amount_due( $org = false ) {
 
 	$current_due = 0;
 
-	$formatter = new NumberFormatter( 'en_US', NumberFormatter::DECIMAL );
-	$currency = 'USD';
+	// $formatter = new NumberFormatter( 'en_US', NumberFormatter::DECIMAL );
+	// $currency = 'USD';
+
+	$jesse_formatter_locale = setlocale(LC_MONETARY, 'en_US.UTF-8');
+	$jesse_formatter = money_format('%.2n', $current_due);
+
+	// foreach ( $members as $member ) {
+	// 	$current_due += $formatter->parseCurrency( get_member_current_balance( $member ), $currency );
+	// }
+	//
+	// return $current_due;
 
 	foreach ( $members as $member ) {
-		$current_due += $formatter->parseCurrency( get_member_current_balance( $member ), $currency );
+		$current_due += get_member_current_balance( $member );
 	}
 
-	return $current_due;
+	return $jesse_formatter;
 }
 
 /**
@@ -3326,14 +3354,24 @@ function gb_current_term_amount_due( $organization = false  ) {
 
 	$current_due = 0;
 
-	$formatter = new NumberFormatter( 'en_US', NumberFormatter::DECIMAL );
-	$currency = 'USD';
+	// $formatter = new NumberFormatter( 'en_US', NumberFormatter::DECIMAL );
+	// $currency = 'USD';
+
+	$jesse_formatter_locale = setlocale(LC_MONETARY, 'en_US.UTF-8');
+	$jesse_formatter = money_format('%.2n', $current_due);
+
+	// foreach ( $members as $member ) {
+	// 	$current_due += $formatter->parseCurrency( get_member_remaining_balance( $member ), $currency );
+	// }
+	//
+	// return $current_due;
 
 	foreach ( $members as $member ) {
-		$current_due += $formatter->parseCurrency( get_member_remaining_balance( $member ), $currency );
+		$current_due += get_member_remaining_balance( $member );
 	}
 
-	return $current_due;
+	return $jesse_formatter;
+
 }
 
 /**
@@ -3347,14 +3385,24 @@ function gb_current_month_amount_past_due( $type = 'all', $org = false ) {
 
 	$past_due = 0;
 
-	$formatter = new NumberFormatter( 'en_US', NumberFormatter::DECIMAL );
-	$currency = 'USD';
+	// $formatter = new NumberFormatter( 'en_US', NumberFormatter::DECIMAL );
+	// $currency = 'USD';
+
+	$jesse_formatter_locale = setlocale(LC_MONETARY, 'en_US.UTF-8');
+	$jesse_formatter = money_format('%.2n', $past_due);
+
+	// foreach ( $members as $member ) {
+	// 	$past_due += $formatter->parseCurrency( get_member_overdue_balance( $member ), $currency );
+	// }
+	//
+	// return $past_due;
 
 	foreach ( $members as $member ) {
-		$past_due += $formatter->parseCurrency( get_member_overdue_balance( $member ), $currency );
+		$past_due += get_member_overdue_balance( $member );
 	}
 
-	return $past_due;
+	return $jesse_formatter;
+
 }
 
 /**
@@ -3370,8 +3418,11 @@ function gb_current_month_amount_paid( $payment_type = 'all', $organization = fa
 
 	$paid = 0;
 
-	$formatter = new NumberFormatter( 'en_US', NumberFormatter::DECIMAL );
-	$currency = 'USD';
+	//$formatter = new NumberFormatter( 'en_US', NumberFormatter::DECIMAL );
+	//$currency = 'USD';
+
+	$jesse_formatter_locale = setlocale(LC_MONETARY, 'en_US.UTF-8');
+	$jesse_formatter = money_format('%.2n', $paid);
 
 	// Potential todo: add meta_query boundary for semester start date
 	$payment_args = array();
@@ -3382,11 +3433,17 @@ function gb_current_month_amount_paid( $payment_type = 'all', $organization = fa
 		$payment_args['payment_type'] = 'dues';
 	}
 
+	// foreach ( $members as $member ) {
+	// 	$paid += $formatter->parseCurrency( get_member_amount_paid( $member, false, $payment_args ), $currency );
+	// }
+	//
+	// return $paid;
+
 	foreach ( $members as $member ) {
-		$paid += $formatter->parseCurrency( get_member_amount_paid( $member, false, $payment_args ), $currency );
+		$paid += get_member_amount_paid( $member, false, $payment_args );
 	}
 
-	return $paid;
+	return $jesse_formatter;
 }
 
 /**
@@ -3399,14 +3456,23 @@ function gb_term_total_dues( $organization = false  ) {
 
 	$total_dues = 0;
 
-	$formatter = new NumberFormatter( 'en_US', NumberFormatter::DECIMAL );
-	$currency = 'USD';
+	// $formatter = new NumberFormatter( 'en_US', NumberFormatter::DECIMAL );
+	// $currency = 'USD';
+
+	$jesse_formatter_locale = setlocale(LC_MONETARY, 'en_US.UTF-8');
+	$jesse_formatter = money_format('%.2n', $total_dues);
+
+	// foreach ( $members as $member ) {
+	// 	$total_dues += $formatter->parseCurrency( gb_get_member_dues( $member ), $currency );
+	// }
+	//
+	// return $total_dues;
 
 	foreach ( $members as $member ) {
-		$total_dues += $formatter->parseCurrency( gb_get_member_dues( $member ), $currency );
+		$total_dues += gb_get_member_dues( $member );
 	}
 
-	return $total_dues;
+	return $jesse_formatter;
 }
 
 
