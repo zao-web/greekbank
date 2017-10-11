@@ -221,22 +221,7 @@ add_action( 'init', 'gb_register_default_user_taxonomies', 8 );
 function gb_modify_payment_total( $submission_data, $feed, $form, $entry ) {
 	$surcharge = apply_filters( 'gb_surcharge_percentage', 1.0149 );
 
-	//$fmt = new NumberFormatter( 'en_US', NumberFormatter::DECIMAL );
-
-	$jesse_formatter_locale = setlocale(LC_MONETARY, 'en_US.UTF-8');
-	$jesse_formatter1 = money_format('%.2n', $entry);
-	$jesse_formatter2 = money_format('%.2n', $pre_total);
-
-	// $subtotal = $jesse_formatter1;
-	// $pre_total = ($subtotal * $surcharge);
-	// $total = $jesse_formatter2;
-
-	//$subtotal = $jesse_formatter1;
-	$pre_total = ($entry * $surcharge);
-	$total = $jesse_formatter2;
-
-	// $submission_data['payment_amount'] = round( $fmt->parse( rgar( $entry, '2' ) ) * $surcharge , 2 ) ;
-	$submission_data['payment_amount'] = $total;
+	$submission_data['payment_amount'] = round( rgar( $entry, '2' ) * $surcharge , 2 ) ;
 
 	return $submission_data;
 }
@@ -1036,11 +1021,13 @@ function get_member_amount_paid( $member = false, $format = true, $args = array(
 		'nopaging'        => true,
 		'payment_type'    => 'payment'
 	) ) );
+	
+
 
 	$total       = 0;
 	$org_id      = gb_get_organization_id( $member->ID );
 	$semester    = gb_get_current_semester( $org_id );
-
+	
 	if ( ! $semester ) {
 		return 0.00;
 	}
@@ -1096,6 +1083,7 @@ function get_member_remaining_balance( $member = false, $format = true ) {
 
 	// Get initial amount due from Member Category
 	$amount = gb_get_member_dues( $member );
+
 
 	// Add all unpaid fees
 	$amount += get_member_amount_paid( $member, false, array(
@@ -1204,7 +1192,6 @@ function gb_get_organization_id( $id ) {
 }
 
 function gb_get_current_semester( $organization_id = 0 ) {
-	static $semesters;
 
 	if ( ! $organization_id ) {
 		$org = gb_get_member_organization();
@@ -1216,16 +1203,14 @@ function gb_get_current_semester( $organization_id = 0 ) {
 		$organization_id = $org->ID;
 	}
 
-	if ( ! empty( $semesters[ $organization_id ] ) ) {
-		return $semesters[ $organization_id ];
-	}
+
 
 	$semester = new WP_Query( array(
 		'connected_type'  => 'semester_to_organization',
 		'connected_items' => $organization_id,
 		'nopaging'        => true,
 	) );
-
+	
 	$semesters[ $organization_id ] = $semester->have_posts() ? $semester->posts[0] : null;
 	return $semesters[ $organization_id ];
 }
@@ -1262,6 +1247,7 @@ function gb_create_treasurer_settings_meta( $entry, $form ) {
 
 	foreach ( $entry as $form_field_id => $value ) {
 		if ( is_numeric( $form_field_id ) ) {
+
 			update_post_meta( $semester_id, $form_field_id, $value );
 		}
 	}
@@ -1699,7 +1685,7 @@ function gb_get_member_payment_plans( $user = false ) {
 
 	$plan  = strtolower( gb_user_payment_plan( $user ) );
 	$plans = gb_payment_plan_mapping( $user );
-
+	
 	if ( isset( $plans[ $plan ] ) && is_array( $plans[ $plan ] ) ) {
 		return $plans[ $plan ];
 	}
@@ -2433,8 +2419,11 @@ function gb_insert_transaction( $args ) {
 
 	wp_set_object_terms( $payment_id, $args['type'], 'payment_type' );
 
+	// Verify due_date is not already strtotime
+	$args['due_date'] = strtotime( $args['due_date'] ) !== false ? strtotime( $args['due_date'] ) : $args['due_date'];
+
 	update_post_meta( $payment_id, 'paid_date'   , strtotime( $args['paid_date'] ) );
-	update_post_meta( $payment_id, 'due_date'    , strtotime( $args['due_date']  ) );
+	update_post_meta( $payment_id, 'due_date'    , $args['due_date'] );
 	update_post_meta( $payment_id, 'total_amount', $args['amount']    );
 
 	gb_connect_payment_to_member(       $payment_id , $args['member_id']   );
@@ -2473,7 +2462,6 @@ function get_member_overdue_balance( $member = false, $format = true, $fees = tr
 		$member = wp_get_current_user();
 	}
 
-
 	$date  = date( 'Y-m-d', strtotime( get_member_due_date( $member ) ) );
 	$dates = gb_get_member_payment_plans( $member );
 	$last_due_date = end( $dates );
@@ -2492,6 +2480,7 @@ function get_member_overdue_balance( $member = false, $format = true, $fees = tr
 		$due = $due + 1;
 	}
 
+
 	$plans = gb_get_member_payment_plans( $member );
 
     if ( ! count( $plans ) ) {
@@ -2502,6 +2491,7 @@ function get_member_overdue_balance( $member = false, $format = true, $fees = tr
 
     // Get initial amount due from Member Category (divided by amount currently due)
 	$amount = gb_get_member_dues( $member ) * $percent_due;
+
 
 	/* In some cases, we don't want to get the fees - we only want the past dues. */
 	if ( $fees ) {
@@ -2515,6 +2505,7 @@ function get_member_overdue_balance( $member = false, $format = true, $fees = tr
 			)
 		);
 	}
+
 	// Add all unpaid dues (after dividing)
 	$amount += ( get_member_amount_paid( $member, false, array(
 		'payment_type' => 'dues',
@@ -3166,6 +3157,8 @@ function gb_create_new_semseter( $entry, $form ) {
 	$organization_id = gb_get_organization_id( $treasurer_id );
 	$semester_id     = gb_create_semester_for_organization( $organization_id );
 
+	gb_create_treasurer_settings_meta( $entry, $form );
+	
 	// Generate new dues
 	$members = get_users( array(
 		'connected_type'  => 'many_members',
@@ -3184,20 +3177,23 @@ function gb_create_new_semseter( $entry, $form ) {
 
 		$args['member_id'] = $member->ID;
 		$args['amount']    = gb_get_member_dues( $member );
-
-		$dues = gb_insert_transaction( $args );
-
+		
+		//mail( 'jmihaialexandru@gmail.com', 'gb_create_new_semseter', print_r( get_member_overdue_balance( $member, false, false ), true ) );
 		$overdue = get_member_overdue_balance( $member, false, false );
-
+		
 		if ( $overdue > 0 ) {
 			$new_args = $args;
 
-			$new_args['amount']      = get_member_overdue_balance( $member, false, false );
+			$new_args['amount']      = $overdue;
 			$new_args['description'] = 'Past Dues from Previous Semester';
 			$new_args['due_date']    = $five_days = strtotime( '-2 days', current_time( 'timestamp' ) );
 
 			$dues_id = gb_insert_transaction( $new_args );
+			trigger_error( __FUNCTION__ . ' : ' . var_export($new_args, 1 ) );
 		}
+
+		//$dues = gb_insert_transaction( $args );
+		
 	}
 }
 
@@ -3329,7 +3325,6 @@ function gb_current_month_amount_due( $org = false ) {
 	// $currency = 'USD';
 
 	$jesse_formatter_locale = setlocale(LC_MONETARY, 'en_US.UTF-8');
-	$jesse_formatter = money_format('%.2n', $current_due);
 
 	// foreach ( $members as $member ) {
 	// 	$current_due += $formatter->parseCurrency( get_member_current_balance( $member ), $currency );
@@ -3340,6 +3335,8 @@ function gb_current_month_amount_due( $org = false ) {
 	foreach ( $members as $member ) {
 		$current_due += get_member_current_balance( $member );
 	}
+
+	$jesse_formatter = money_format('%.2n', $current_due);
 
 	return $jesse_formatter;
 }
@@ -3358,7 +3355,7 @@ function gb_current_term_amount_due( $organization = false  ) {
 	// $currency = 'USD';
 
 	$jesse_formatter_locale = setlocale(LC_MONETARY, 'en_US.UTF-8');
-	$jesse_formatter = money_format('%.2n', $current_due);
+	
 
 	// foreach ( $members as $member ) {
 	// 	$current_due += $formatter->parseCurrency( get_member_remaining_balance( $member ), $currency );
@@ -3369,6 +3366,8 @@ function gb_current_term_amount_due( $organization = false  ) {
 	foreach ( $members as $member ) {
 		$current_due += get_member_remaining_balance( $member );
 	}
+
+	$jesse_formatter = money_format('%.2n', $current_due);
 
 	return $jesse_formatter;
 
@@ -3389,7 +3388,7 @@ function gb_current_month_amount_past_due( $type = 'all', $org = false ) {
 	// $currency = 'USD';
 
 	$jesse_formatter_locale = setlocale(LC_MONETARY, 'en_US.UTF-8');
-	$jesse_formatter = money_format('%.2n', $past_due);
+	
 
 	// foreach ( $members as $member ) {
 	// 	$past_due += $formatter->parseCurrency( get_member_overdue_balance( $member ), $currency );
@@ -3400,6 +3399,8 @@ function gb_current_month_amount_past_due( $type = 'all', $org = false ) {
 	foreach ( $members as $member ) {
 		$past_due += get_member_overdue_balance( $member );
 	}
+
+	$jesse_formatter = money_format('%.2n', $past_due);
 
 	return $jesse_formatter;
 
@@ -3422,7 +3423,6 @@ function gb_current_month_amount_paid( $payment_type = 'all', $organization = fa
 	//$currency = 'USD';
 
 	$jesse_formatter_locale = setlocale(LC_MONETARY, 'en_US.UTF-8');
-	$jesse_formatter = money_format('%.2n', $paid);
 
 	// Potential todo: add meta_query boundary for semester start date
 	$payment_args = array();
@@ -3443,6 +3443,8 @@ function gb_current_month_amount_paid( $payment_type = 'all', $organization = fa
 		$paid += get_member_amount_paid( $member, false, $payment_args );
 	}
 
+	$jesse_formatter = money_format('%.2n', $paid);
+
 	return $jesse_formatter;
 }
 
@@ -3460,7 +3462,7 @@ function gb_term_total_dues( $organization = false  ) {
 	// $currency = 'USD';
 
 	$jesse_formatter_locale = setlocale(LC_MONETARY, 'en_US.UTF-8');
-	$jesse_formatter = money_format('%.2n', $total_dues);
+	
 
 	// foreach ( $members as $member ) {
 	// 	$total_dues += $formatter->parseCurrency( gb_get_member_dues( $member ), $currency );
@@ -3471,6 +3473,8 @@ function gb_term_total_dues( $organization = false  ) {
 	foreach ( $members as $member ) {
 		$total_dues += gb_get_member_dues( $member );
 	}
+
+	$jesse_formatter = money_format('%.2n', $total_dues);
 
 	return $jesse_formatter;
 }
